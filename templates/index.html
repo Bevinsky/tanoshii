@@ -1,0 +1,230 @@
+<html>
+    <head>
+        <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+        <meta content="utf-8" http-equiv="encoding">
+        <title>Majan-tte... tanoshii yo ne!</title>
+        <script src="/static/socket.io.js"></script>
+        <script defer src="/static/alpinejs.3.10.3.min.js"></script>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <script type="text/javascript" charset="utf-8">
+var socket;
+
+document.addEventListener('alpine:init', () =>
+    Alpine.data('root', () => ({
+        socket: null,
+
+        error_message: null,
+        error_timeout: null,
+
+        // login, room, game
+        location: 'login',
+
+        nickname: "",
+
+        lobby_name: "",
+        lobby_config: {},
+        lobby_self_idx: 0,
+        lobby_players: [null, null, null, null],
+
+        round_wind: 'E',
+        round_no: 1,
+        round_bonus: 0,
+
+        dora: [],
+
+        game_players: ["", "", "", ""],
+
+        hands: [[0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48], [], [], []],
+
+        melds: [[], [], [], []],
+
+        discards: [[], [], [], []],
+
+        init: function() {
+            socket = io();
+            this.socket = socket;
+            socket.on('server_error', this.ev_server_error.bind(this))
+            socket.on('enter_room', this.ev_enter_room.bind(this))
+            socket.on('room_update', this.ev_room_update.bind(this))
+            
+
+        },
+
+        getPlayerIdx: function(player_ident) {
+            // me, left, right, across
+            meIdx = this.game_players.indexOf(this.nickname)
+            idx = (meIdx + {'me': 0, 'right': 1, 'across': 2, 'left': 3}[player_ident]) % 4
+            return idx
+        },
+
+        getFor: function(player_ident, obj) {
+            return obj[this.getPlayerIdx(player_ident)]
+        },
+
+        getDora: function() {
+            paddedDora = []
+            for (t in this.dora)
+                paddedDora.push(t)
+            while (paddedDora.length < 5)
+                paddedDora.push(-1)
+            return paddedDora
+        },
+
+        ev_server_error: function(msg) {
+            console.log('ev_server_error', msg)
+            if (this.error_timeout !== null) {
+                clearTimeout(this.error_timeout)
+                this.error_timeout = null
+            }
+            this.error_message = msg
+            this.error_timeout = setTimeout(() => this.error_message = null, 2000)
+        },
+
+        ev_enter_room: function(data) {
+            console.log('ev_enter_room', data)
+            this.lobby_name = data['code']
+            this.nickname = data['nickname']
+            this.lobby_self_idx = data['lobby_idx']
+            this.location = 'lobby'
+        },
+
+        ev_room_update: function(data) {
+            console.log('ev_room_update', data)
+            this.lobby_players = data['players']
+            this.lobby_config = data['config']
+        },
+
+    }))
+);
+
+function getTileImg(t136) {
+    var base = "/static/tiles/";
+    var t34 = Math.floor(t136 / 4);
+    if (t34 >= 0 && t34 <= 26) {
+        if (t34 <= 8)
+            base += "Man";
+        else if (t34 >= 9 && t34 <= 17)
+            base += "Pin";
+        else
+            base += "Sou";
+        base += (t34 % 9 + 1);
+    } else {
+        base += {
+            "-1": "Haku",
+            27: "Ton",
+            28: "Nan",
+            29: "Shaa",
+            30: "Pei",
+            31: "Haku",
+            32: "Hatsu",
+            33: "Chun"
+        }[t34]
+    }
+    return base + ".png";
+}
+        </script>
+        
+        <div id="root" x-init="init()" x-data="root">
+            
+            <div id="error" x-text="error_message" x-show="error_message !== null" x-transition></div>
+            <div id="container">
+                <!--
+                <div id="login" class="flex column center" x-show="location == 'login'" x-data="{
+                    name_input: '',
+                    room_id_input: '',
+                    create_game: function() {
+                        if (this.name_input !== '')
+                            socket.emit('create_game', this.name_input)
+                    },
+                    join_game: function() {
+                        if (this.name_input !== '' && this.room_id_input !== '')
+                            socket.emit('join_game', this.room_id_input, this.name_input)
+                    }
+                }">
+                    <div class="flex row center">
+                        <div class="flex column end login-box">
+                            <div>Name</div>
+                            <div><input x-model="name_input" type="text"></div>
+                        </div>
+                    </div>
+                    <div class="flex row center">
+                        <div>
+                            <div class="flex column center login-box">
+                                <div><input @click="create_game" type="button" value="Create game"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex column center login-box">
+                                <div><input x-model="room_id_input" type="text"></div>
+                                <div><input @click="join_game" type="button" value="Join game"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="lobby" class="flex column" x-show="location == 'lobby'">
+                    <div id="lobby-title">Room <span x-text="lobby_name">34567</span></div>
+                    <div class="flex row" style="justify-content: space-between; gap: calc(var(--base-size) * 3)">
+                        <div id="lobby-seats" class="flex column">
+                            <template x-for="pl in lobby_players">
+                                <div class="lobby-seat flex row">
+                                    <div class="lobby-name">
+                                        <span x-text="pl !== null ? pl.name : ''"></span>
+                                        <span x-text="pl !== null && !pl.host && pl.ready ? '✔️' : ''"></span>
+                                        <span x-text="pl !== null && pl.host ? '👑' : ''"></span>
+                                    </div>
+                                    <div class="lobby-archetype"></div>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="flex column" style="flex-grow:1; gap: calc(var(--base-size) * 2)">
+                            <div id="lobby-config">
+                                <div class="lobby-config-item">fdsfd</div>
+                            </div>
+                            <div id="lobby-buttons" class="flex row">
+                                <div class="lobby-button" x-text="location === 'lobby' && lobby_players[lobby_self_idx].host ? 'Start' : 'Ready'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                -->
+                <div id="game" class="flex row center">
+                    <div id="arena">
+                        <div id="hand-self" class="hand-box">
+                            <div class="hand-tiles">
+                                <template x-for="tile in getFor('me', hands)" :key="tile">
+                                    <div @click="hands[0].splice(hands[0].indexOf(tile136), 1)" x-data="{tile136: tile, show: false}" x-show="show" x-init="$nextTick(() => show=!show)" class="tile" x-transition>
+                                        <div :style="{'background-image': 'url(' + getTileImg(tile) + ')'}"><img src="/static/tiles/Haku.png"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div id="hand-right" class="hand-box">
+                            <div class="hand-tiles">
+                                <template >
+                                    <div class="tile"><div :style="{'background-image': 'url(' + getTileImg(tile) + ')'}"><img src="/static/tiles/Haku.png"></div></div>
+                                </template>
+                            </div>
+                        </div>
+                        <div id="hand-left" class="hand-box">
+                            fgsd
+                        </div>
+                        <div id="hand-across" class="hand-box">
+                            bla
+                        </div>
+                        
+                        
+                    </div>
+                </div>
+
+
+            </div>
+        
+        </div>
+
+        
+    </body>
+</html>

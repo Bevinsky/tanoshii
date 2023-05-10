@@ -1,0 +1,244 @@
+body {
+    color: #eeeeee;
+    background: url(/static/bg.png) repeat;
+    margin:0;
+    --base-size: calc(min(1vh, 1vw));
+    --other-size: calc(max(1vh, 1vw));
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+
+#error {
+    position: fixed;
+    top: 0;
+    left: 0;
+    color: orangered;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    background-color: #F005;
+    font-size: 1.2em;
+}
+
+#root {
+    width: 100%;
+    height: 100%;
+    display:flex;
+    justify-content: center;
+}
+
+#login {
+    width: 100%;
+    height: 100%;
+    gap: 2vh;
+}
+
+#container {
+    height: calc(var(--base-size) * 100);
+    width: calc(var(--base-size) * 100);
+    align-self: center;
+    position:relative;
+    box-shadow: 0px 0px calc((var(--other-size) - var(--base-size)) * 80) calc((var(--other-size) - var(--base-size)) * 20) black;
+    box-sizing: border-box;
+    border: 2px solid #6d3106;
+    
+}
+
+#lobby {
+    height: calc(var(--base-size) * 100);
+    width: calc(var(--base-size) * 100);
+    align-self: center;
+    position:relative;
+    padding: calc(var(--base-size) * 3);
+    gap: calc(var(--base-size) * 3);
+    box-sizing: border-box;
+}
+#lobby-title {
+    font-size:calc(var(--base-size) * 4);
+    font-weight: bold;
+}
+#lobby-seats {
+    gap: calc(var(--base-size) * 2);
+}
+.lobby-seat {
+    width: calc(var(--base-size) * 60);
+    height: calc(var(--base-size) * 5);
+    background-color:darkgoldenrod;
+    justify-content: space-between;
+    border-radius: calc(var(--base-size) * 1);
+    box-shadow: 0 0 calc(var(--base-size) * 1) calc(var(--base-size) * 0.1) black;
+}
+.lobby-name {
+    align-self: center;
+    padding: calc(var(--base-size) * 1);
+    font-size:calc(var(--base-size) * 2.5);
+}
+.lobby-archetype {
+    width:30%;
+    background-color: crimson;
+    border-radius: calc(var(--base-size) * 1);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+#lobby-config {
+    background-color:sandybrown;
+}
+.lobby-config-item {
+    width:100%;
+    height: calc(var(--base-size) * 2);
+}
+#lobby-buttons {
+    gap: calc(var(--base-size) * 1);
+}
+.lobby-button {
+    flex-grow:1;
+    text-align: center;
+    background-color:rosybrown;
+    line-height: calc(var(--base-size) * 4);
+    font-size: calc(var(--base-size) * 2);
+    border-radius: calc(var(--base-size) * 0.5);
+    box-shadow: 0 0 calc(var(--base-size) * 1) calc(var(--base-size) * 0.1) black;
+    vertical-align:middle;
+}
+
+
+#game {
+    width: 100%;
+    height: 100%;
+}
+
+#arena {
+    background-color:bisque;
+    height: calc(var(--base-size) * 100);
+    width: calc(var(--base-size) * 100);
+    align-self: center;
+    position:relative;
+}
+
+.hand-box {
+    display:flex;
+    position:absolute;
+    width: calc(var(--base-size) * 85);
+    height: calc(var(--base-size) * 15);
+    flex-flow: row nowrap;
+    align-items: center;
+
+}
+
+.hand-tiles {
+    height:40%;
+    display:flex;
+    flex-flow: row nowrap;
+    gap: calc(var(--base-size) * 0.2);
+}
+
+#hand-self {
+    top: calc(var(--base-size) * 85);
+    left: calc(var(--base-size) * 15);
+    background-color:cadetblue;
+}
+#hand-left {
+    top: calc(var(--base-size) * 7.5);
+    left: calc(var(--base-size) * 7.5);
+    background-color:darkseagreen;
+    transform: rotate(90deg);
+    transform-origin:left;
+}
+#hand-across {
+    top:0;
+    left:0;
+    background-color:mediumturquoise;
+    transform: rotate(180deg);
+}
+#hand-right {
+    top: calc(var(--base-size) * (85 - 7.5));
+    left: calc(var(--base-size) * (85 + 7.5));
+    background-color:silver;
+    transform: rotate(-90deg);
+    transform-origin:left;
+    
+}
+
+.login-box {
+    width: 20vw;
+    text-align:center;
+    gap: 1vh;
+}
+
+.flex {
+    display: flex;
+}
+.column {
+    flex-flow: column nowrap;
+}
+.row {
+    flex-flow: row nowrap;
+}
+.center {
+    justify-content: center;
+}
+.start {
+    justify-content: flex-start;
+}
+.end {
+    justify-content: flex-end;
+}
+
+/*
+#login > div {
+    display:flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    height:100%;
+    width:100%;
+}*/
+
+
+
+/* rotation is 0.125 * height offset */
+
+.tile {
+    display: inline-block;
+    background: url(/static/tiles/Front.png);
+    background-size: contain;
+    background-repeat:no-repeat;
+    height:100%;
+}
+
+.tile > div {
+    height: 100%;
+    width: 100%;
+    transform: scale(0.8);
+    background-size: contain;
+    background-repeat:no-repeat;
+}
+.tile img {
+    height: 100%;
+    width: 100%;
+    transform: scale(0.8);
+}
+
+/*
+
+.tile {
+    background: url(https://wessie.info/s/ba8d.png);
+        background-repeat: repeat;
+        background-size: auto;
+    background-size: contain;
+    background-repeat: no-repeat;
+    height: 100%;
+
+    display: inline-flex;
+    font-size: 0;
+}
+
+.tile > img {
+    height: 100%;
+    width: 100%;
+    transform: scale(0.8);
+}
+
+rotate:90deg; bottom:-12.5%;
+
+*/
