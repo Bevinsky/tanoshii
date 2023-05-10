@@ -1,0 +1,2 @@
+# tanoshii
+Mahjong
